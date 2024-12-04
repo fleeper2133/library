@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Библиотека</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Библиотека</h1>
+        <form id="search-form">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Поиск" id="search-input">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Поиск</button>
+                </div>
+            </div>
+        </form>
+        <div class="row" id="book-list">
+            {% for book in books %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        {% if book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" class="card-img-top" alt="{{ book.title }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                            <p class="card-text">{{ book.description }}</p>
+                            <a href="{{ book.pdf_file.url }}" class="btn btn-primary">Читать</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#search-form').on('submit', function(event) {
+                event.preventDefault();
+                var query = $('#search-input').val();
+                $.ajax({
+                    url: '{% url "book_search" %}',
+                    type: 'GET',
+                    data: { q: query },
+                    success: function(data) {
+                        $('#book-list').empty();
+                        data.forEach(function(book) {
+                            var bookHtml = `
+                                <div class="col-md-4">
+                                    <div class="card mb-4 shadow-sm">
+                                        ${book.cover_image ? `<img src="/media/${book.cover_image}" class="card-img-top" alt="${book.title}">` : ''}
+                                        <div class="card-body">
+                                            <h5 class="card-title">${book.title}</h5>
+                                            <p class="card-text">${book.description}</p>
+                                            <a href="/media/${book.pdf_file}" class="btn btn-primary">Read PDF</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            $('#book-list').append(bookHtml);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
